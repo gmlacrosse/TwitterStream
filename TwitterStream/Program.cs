@@ -72,12 +72,13 @@ namespace TwitterStream
                             else
                             {
                                 var c = hashTagsDic[hashtag.Text];
-                                hashTagsDic[hashtag.Text] = c += 1;
+                                c++;
+                                hashTagsDic[hashtag.Text] = c;
                             }
                         }
                     }
 
-                    var text = args.Tweet.Text;
+                    var text = args.Tweet.ToString();
                     foreach (var e in Unified)
                     {
                         if (text.IndexOf(e, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -89,7 +90,8 @@ namespace TwitterStream
                             else
                             {
                                 var c = emojis[e];
-                                emojis[e] = c += 1;
+                                c++;
+                                emojis[e] = c;
                             }
                     }
 
@@ -104,7 +106,8 @@ namespace TwitterStream
                             else
                             {
                                 var c = symbolsDic[e.Text];
-                                symbolsDic[e.Text] = c += 1;
+                                c++;
+                                symbolsDic[e.Text] = c;
                             }
                         }
                     }
@@ -128,7 +131,8 @@ namespace TwitterStream
                         else
                         {
                             var c = urls[u];
-                            urls[u] = c += 1;
+                            c++;
+                            urls[u] = c;
                         }
 
                         if (u.ToLower().IndexOf("pic.twitter.com") >= 0 || u.ToLower().IndexOf("instagram.com") >= 0)
