@@ -86,7 +86,7 @@ namespace TwitterStream
                     foreach(char ch in text)
                     {
                         string e = char.Parse(ch.ToString()).ToString();
-                        if (EmojiTexts.Contains(e))
+                        if (Unified.Contains(e))
                         {
                             if (!emojis.ContainsKey(e))
                             {
@@ -97,6 +97,27 @@ namespace TwitterStream
                                 var c = emojis[e];
                                 c++;
                                 emojis[e] = c;
+                            }
+                        }
+                    }
+
+                    var del = new char[1];
+                    del[0] = ' ';
+                    var split = text.Split(del);
+
+                    foreach(var word in split)
+                    {
+                        if (EmojiTexts.Contains(word))
+                        {
+                            if (!emojis.ContainsKey(word))
+                            {
+                                emojis.Add(word, 1);
+                            }
+                            else
+                            {
+                                var c = emojis[word];
+                                c++;
+                                emojis[word] = c;
                             }
                         }
                     }
