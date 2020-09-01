@@ -82,12 +82,14 @@ namespace TwitterStream
                     }
                     // "@BTS_twt JOONI JJANG💜💜💜"
                     var text = args.Tweet.Text;
+                    bool hasEmojis = false;
 
                     foreach(char ch in text)
                     {
-                        string e = char.Parse(ch.ToString()).ToString();
+                        string e = char.Parse(ch.ToString()).ToString().ToLower();
                         if (Unified.Contains(e))
                         {
+                            hasEmojis = true;
                             if (!emojis.ContainsKey(e))
                             {
                                 emojis.Add(e, 1);
@@ -109,6 +111,7 @@ namespace TwitterStream
                     {
                         if (EmojiTexts.Contains(word))
                         {
+                            hasEmojis = true;
                             if (!emojis.ContainsKey(word))
                             {
                                 emojis.Add(word, 1);
@@ -121,6 +124,8 @@ namespace TwitterStream
                             }
                         }
                     }
+
+                    if (hasEmojis) counters.WithEmojis++;
 
                     if (args.Tweet.Entities.Symbols.Any())
                     {
@@ -193,7 +198,7 @@ namespace TwitterStream
                     {
                         Console.WriteLine(counters.GetStatsAsString());
 
-                        var emjper = emojis.Count * 100.0 / counters.Count;
+                        var emjper = counters.WithEmojis * 100.0 / counters.Count;
 
                         Console.WriteLine($"\r\nEmojis: {emojis.Count}| {emjper:0.##}%\r\n");
 
