@@ -21,7 +21,7 @@ namespace TwitterStream
         public static void Main(string[] args)
         {
             Console.WriteLine("Starting TWitter Sample Stream Monitor Press Ctrl-C to exit.");
-            Thread.Sleep(1000);
+            Thread.Sleep(300);
 
             string json = File.ReadAllText("emojis.json");
             Emojis = JsonConvert.DeserializeObject<List<Emojis>>(json);
@@ -57,18 +57,23 @@ namespace TwitterStream
                 var stream = Tweetinvi.Stream.CreateSampleStream();
                 stream.TweetReceived += (sender, args) =>
                 {
-                    var hashtags = args.Tweet.Hashtags;
-
-                    foreach (var hashtag in hashtags)
+                    if (args.Tweet.Entities.Hashtags.Any())
                     {
-                        if (!hashTagsDic.ContainsKey(hashtag.Text))
+                        counters.HashTagCount++;
+
+                        var hashtags = args.Tweet.Hashtags;
+
+                        foreach (var hashtag in hashtags)
                         {
-                            hashTagsDic.Add(hashtag.Text, 1);
-                        }
-                        else
-                        {
-                            var c = hashTagsDic[hashtag.Text];
-                            hashTagsDic[hashtag.Text] = c += 1;
+                            if (!hashTagsDic.ContainsKey(hashtag.Text))
+                            {
+                                hashTagsDic.Add(hashtag.Text, 1);
+                            }
+                            else
+                            {
+                                var c = hashTagsDic[hashtag.Text];
+                                hashTagsDic[hashtag.Text] = c += 1;
+                            }
                         }
                     }
 
@@ -107,8 +112,12 @@ namespace TwitterStream
                     List<string> urlsList = new List<string>();
 
                     if (args.Tweet.Entities.Urls.Any())
+                    {
+                        counters.WithUrlsCount++;
+
                         foreach (var ent in args.Tweet.Entities.Urls)
                             urlsList.Add(ent.URL);
+                    }
 
                     foreach (var u in urlsList)
                     {
@@ -137,34 +146,38 @@ namespace TwitterStream
                     }
 
                     var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-                    foreach (Match url in linkParser.Matches(text))
+                    var matches = linkParser.Matches(text);
+                    if (matches.Count > 0)
                     {
-                        var u = url.ToString();
-                        if (!urls.ContainsKey(u))
+                        counters.WithUrlsCount++;
+                        foreach (Match url in matches)
                         {
-                            urls.Add(u, 1);
-                        }
-                        else
-                        {
-                            var c = urls[u];
-                            urls[u] = c += 1;
-                        }
-
-                        if (u.ToLower().IndexOf("pic.twitter.com") >= 0 || u.ToLower().IndexOf("instagram.com") >= 0)
-                        {
-                            if (!imageUrls.ContainsKey(u))
+                            var u = url.ToString();
+                            if (!urls.ContainsKey(u))
                             {
-                                imageUrls.Add(u, 1);
+                                urls.Add(u, 1);
                             }
                             else
                             {
-                                var c = imageUrls[u];
-                                imageUrls[u] = c += 1;
+                                var c = urls[u];
+                                c++;
+                                urls[u] = c;
+                            }
+
+                            if (u.ToLower().IndexOf("pic.twitter.com") >= 0 || u.ToLower().IndexOf("instagram.com") >= 0)
+                            {
+                                if (!imageUrls.ContainsKey(u))
+                                {
+                                    imageUrls.Add(u, 1);
+                                }
+                                else
+                                {
+                                    var c = imageUrls[u];
+                                    imageUrls[u] = c += 1;
+                                }
                             }
                         }
                     }
-
                     counters.Count += 1;
                     if (counters.Count % 100 == 0)
                     {
@@ -203,7 +216,7 @@ namespace TwitterStream
                                 if (end > 5) break;
                             }
                         }
-                        var hashper = hashTagsDic.Count * 100.0 / counters.Count;
+                        var hashper = counters.HashTagCount * 100.0 / counters.Count;
 
                         Console.WriteLine($"\r\nHashtags: {hashTagsDic.Count} | {hashper:0.##}%\r\n");
 
@@ -220,7 +233,7 @@ namespace TwitterStream
                             }
                         }
 
-                        var urlsper = urls.Count * 100.0 / counters.Count;
+                        var urlsper = counters.WithUrlsCount * 100.0 / counters.Count;
 
                         Console.WriteLine($"\r\nURLS: {urls.Count} | {urlsper:0.##}%\r\n");
 

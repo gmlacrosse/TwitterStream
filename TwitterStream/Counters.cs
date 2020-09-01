@@ -14,6 +14,9 @@ namespace TwitterStream
         private DateTime StartDateTime = DateTime.UtcNow;
 
         public int Count { get; set; }
+        public int HashTagCount { get; set; }
+
+        public int WithUrlsCount { get; set; }
 
         public Counters()
         {
@@ -40,7 +43,7 @@ namespace TwitterStream
                 minStr = min == 0 ? "--" : min.ToString();
                 hourStr = hour == 0 ? "--" : hour.ToString();
             }
-            var statsString = $"Stats\r\n----------------------------------------\r\nCount : {Count}\r\nHour : {hourStr}\r\nMin : {minStr}\r\nSec : {sec}";
+            var statsString = $"TotalCount : {Count}  Hour : {hourStr} | Min : {minStr} | Sec : {sec}";
             return statsString;
         }
     }
