@@ -12,10 +12,8 @@ namespace TwitterStream
     public class Counters
     {
         private DateTime StartDateTime = DateTime.UtcNow;
-
         public int Count { get; set; }
         public int HashTagCount { get; set; }
-
         public int WithUrlsCount { get; set; }
 
         public Counters()
