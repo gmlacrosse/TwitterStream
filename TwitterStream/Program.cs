@@ -2,8 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Tweetinvi;
@@ -31,6 +33,7 @@ namespace TwitterStream
             foreach (var e in Emojis)
             {
                 EmojiTexts.Add(e.short_name.ToLower());
+
                 Unified.Add(e.unified);
             }
 
@@ -77,12 +80,14 @@ namespace TwitterStream
                             }
                         }
                     }
+                    // "@BTS_twt JOONI JJANG💜💜💜"
+                    var text = args.Tweet.Text;
 
-                    var text = args.Tweet.ToString();
-                    foreach (var e in Unified)
+                    foreach(char ch in text)
                     {
-                        if (text.IndexOf(e, StringComparison.OrdinalIgnoreCase) >= 0)
-
+                        string e = char.Parse(ch.ToString()).ToString();
+                        if (EmojiTexts.Contains(e))
+                        {
                             if (!emojis.ContainsKey(e))
                             {
                                 emojis.Add(e, 1);
@@ -93,11 +98,12 @@ namespace TwitterStream
                                 c++;
                                 emojis[e] = c;
                             }
+                        }
                     }
 
                     if (args.Tweet.Entities.Symbols.Any())
                     {
-                        foreach(var e in args.Tweet.Entities.Symbols)
+                        foreach (var e in args.Tweet.Entities.Symbols)
                         {
                             if (!symbolsDic.ContainsKey(e.Text))
                             {
@@ -122,19 +128,18 @@ namespace TwitterStream
                             urlsList.Add(ent.URL);
                     }
 
+                    if (args.Tweet.Media.Any())
+                    {
+                        counters.WithMedia++;
+
+                        foreach (var m in args.Tweet.Media)
+                        {
+                            urlsList.Add(m.DisplayURL);
+                        }
+                    }
+
                     foreach (var u in urlsList)
                     {
-                        if (!urls.ContainsKey(u))
-                        {
-                            urls.Add(u, 1);
-                        }
-                        else
-                        {
-                            var c = urls[u];
-                            c++;
-                            urls[u] = c;
-                        }
-
                         if (u.ToLower().IndexOf("pic.twitter.com") >= 0 || u.ToLower().IndexOf("instagram.com") >= 0)
                         {
                             if (!imageUrls.ContainsKey(u))
@@ -147,16 +152,8 @@ namespace TwitterStream
                                 imageUrls[u] = c += 1;
                             }
                         }
-                    }
-
-                    var linkParser = new Regex(@"\b(?:https?://|www\.)\S+\b", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-                    var matches = linkParser.Matches(text);
-                    if (matches.Count > 0)
-                    {
-                        counters.WithUrlsCount++;
-                        foreach (Match url in matches)
+                        else
                         {
-                            var u = url.ToString();
                             if (!urls.ContainsKey(u))
                             {
                                 urls.Add(u, 1);
@@ -167,21 +164,9 @@ namespace TwitterStream
                                 c++;
                                 urls[u] = c;
                             }
-
-                            if (u.ToLower().IndexOf("pic.twitter.com") >= 0 || u.ToLower().IndexOf("instagram.com") >= 0)
-                            {
-                                if (!imageUrls.ContainsKey(u))
-                                {
-                                    imageUrls.Add(u, 1);
-                                }
-                                else
-                                {
-                                    var c = imageUrls[u];
-                                    imageUrls[u] = c += 1;
-                                }
-                            }
                         }
                     }
+
                     counters.Count += 1;
                     if (counters.Count % 100 == 0)
                     {
@@ -254,7 +239,7 @@ namespace TwitterStream
                             }
                         }
 
-                        var iurlsper = imageUrls.Count * 100.0 / counters.Count;
+                        var iurlsper = counters.WithMedia * 100.0 / counters.Count;
 
                         Console.WriteLine($"\r\nImage URLS: {imageUrls.Count} | {iurlsper:0.##}% \r\n");
 

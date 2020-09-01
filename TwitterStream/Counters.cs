@@ -15,6 +15,7 @@ namespace TwitterStream
         public int Count { get; set; }
         public int HashTagCount { get; set; }
         public int WithUrlsCount { get; set; }
+        public int WithMedia { get; set; }
 
         public Counters()
         {
