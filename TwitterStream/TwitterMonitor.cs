@@ -4,7 +4,6 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using Tweetinvi;
-using Tweetinvi.Core.Core.Helpers;
 
 namespace TwitterStream
 {
