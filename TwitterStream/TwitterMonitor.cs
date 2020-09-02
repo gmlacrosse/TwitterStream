@@ -73,11 +73,6 @@ namespace TwitterStream
                     // "@BTS_twt JOONI JJANG💜💜💜"
                     // "Good morning 😁"
 
-                    //var testStr = "Good morning 😁";
-
-                    //var result = EmojiParser.ReplaceColonNames(testStr);
-
-                    //Console.WriteLine($"{testStr} == {result}");
                     bool hasEmojis = false;
 
                     List<string> emlist = new List<string>();
