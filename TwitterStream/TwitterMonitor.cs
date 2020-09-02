@@ -6,18 +6,16 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Tweetinvi;
+using Tweetinvi.Core.Core.Helpers;
+using Tweetinvi.Core.Extensions;
 
 namespace TwitterStream
 {
     public class TwitterMonitor
     {
-        private List<Emojis> Emojis;
         private static Dictionary<string, int> EmojisDic;
         private static Dictionary<string, int> HashTagsDic;
         private static Dictionary<string, int> UrlsDic;
-
-        private static HashSet<string> EmojiTexts;
-        private static HashSet<string> Unified;
 
         private static Counters Counters;
 
@@ -27,8 +25,6 @@ namespace TwitterStream
             HashTagsDic = new Dictionary<string, int>();
             UrlsDic = new Dictionary<string, int>();
 
-            EmojiTexts = new HashSet<string>();
-            Unified = new HashSet<string>();
             Counters = new Counters();
         }
 
@@ -36,18 +32,9 @@ namespace TwitterStream
         {
             try
             {
-                string json = File.ReadAllText("emojis.json");
-                Emojis = JsonConvert.DeserializeObject<List<Emojis>>(json);
-
-
-                foreach (var e in Emojis)
-                {
-                    EmojiTexts.Add(e.short_name.ToLower());
-
-                    Unified.Add(e.unified);
-                }
-
-                Console.OutputEncoding = System.Text.Encoding.Unicode;
+                Console.OutputEncoding = Encoding.UTF8;
+                UTF8Encoding uTF8 = new UTF8Encoding();
+                Console.Write(Encoding.UTF8.GetString(uTF8.GetPreamble()));
 
                 var apiKey = ConfigurationManager.AppSettings["APIKey"].ToString();
                 var apiKeySecrete = ConfigurationManager.AppSettings["APISecretKey"].ToString();
@@ -67,6 +54,8 @@ namespace TwitterStream
 
                         foreach (var hashtag in hashtags)
                         {
+                            if (UnicodeHelper.AnyUnicode(hashtag.Text)) continue; // filter out some that won't display properly
+
                             if (!HashTagsDic.ContainsKey(hashtag.Text))
                             {
                                 HashTagsDic.Add(hashtag.Text, 1);
@@ -84,27 +73,32 @@ namespace TwitterStream
                     // "@BTS_twt JOONI JJANG💜💜💜"
                     // "Good morning 😁"
 
+                    //var testStr = "Good morning 😁";
+
+                    //var result = EmojiParser.ReplaceColonNames(testStr);
+
+                    //Console.WriteLine($"{testStr} == {result}");
                     bool hasEmojis = false;
 
-                    var emlist = Extractor.ExtractEmojis(args.Tweet.Text);
+                    List<string> emlist = new List<string>();
+
+                    emlist = EmojiParser.GetEmojisNames(args.Tweet.Text);
 
                     if (emlist.Any())
                     {
-                        foreach (var e in emlist)
-                        {
-                            hasEmojis = true;
-                            var bytes = Encoding.UTF8.GetBytes(e);
-                            var unicode = Encoding.Unicode.GetString(bytes);
+                        Counters.WithEmojis++;
 
-                            if (!EmojisDic.ContainsKey(unicode))
+                        foreach (var emj in emlist)
+                        {
+                            if (!EmojisDic.ContainsKey(emj))
                             {
-                                EmojisDic.Add(unicode, 1);
+                                EmojisDic.Add(emj, 1);
                             }
                             else
                             {
-                                var c = EmojisDic[unicode];
+                                var c = EmojisDic[emj];
                                 c++;
-                                EmojisDic[unicode] = c;
+                                EmojisDic[emj] = c;
                             }
                         }
                     }
@@ -127,19 +121,30 @@ namespace TwitterStream
                     if (args.Tweet.Media.Any())
                     {
                         Counters.WithMedia++;
+
+                        foreach (var m in args.Tweet.Media)
+                            urlsList.Add("http://" + m.DisplayURL);
                     }
+
+                    var extractedURLs = Extractor.ExtractURLs(args.Tweet.Text);
+
+                    if (extractedURLs.Any())
+                        urlsList.AddRange(extractedURLs);
 
                     foreach (var u in urlsList)
                     {
-                        if (!UrlsDic.ContainsKey(u))
+                        var uri = new Uri(u);
+                        var domain = uri.Host;
+
+                        if (!UrlsDic.ContainsKey(domain))
                         {
-                            UrlsDic.Add(u, 1);
+                            UrlsDic.Add(domain, 1);
                         }
                         else
                         {
-                            var c = UrlsDic[u];
+                            var c = UrlsDic[domain];
                             c++;
-                            UrlsDic[u] = c;
+                            UrlsDic[domain] = c;
                         }
                     }
 
@@ -161,11 +166,11 @@ namespace TwitterStream
         private static void DisplayResult()
         {
             Console.WriteLine(Counters.GetStatsAsString());
-            var top5str = string.Format("{0, 25}", "Top 5");
 
             if (EmojisDic.Count > 0)
             {
-                Console.WriteLine($"\r\n{top5str} Emojis");
+                string topstr = string.Format("{0, 25}", "Top Emojis");
+                Console.WriteLine($"\r\n{topstr}");
                 var top5 = Extractor.GetTopFromDictionary(EmojisDic, 5);
                 foreach (var rec in top5)
                     Console.WriteLine($"{rec.Item1,30}");
@@ -173,18 +178,20 @@ namespace TwitterStream
 
             if (HashTagsDic.Count > 0)
             {
-                Console.WriteLine($"\r\n{top5str} Hashtags");
+                string topstr = string.Format("{0, 25}", "Top Hashtags");
+                Console.WriteLine($"\r\n{topstr}");
                 var top5 = Extractor.GetTopFromDictionary(HashTagsDic, 5);
                 foreach (var rec in top5)
-                    Console.WriteLine($"{rec.Item1,35}");
+                    Console.WriteLine($"{rec.Item1,30}");
             }
 
             if (UrlsDic.Count > 0)
             {
-                Console.WriteLine($"\r\n{top5str} URLs");
+                string topstr = string.Format("{0, 25}", "Top Domains");
+                Console.WriteLine($"\r\n{topstr}");
                 var top5 = Extractor.GetTopFromDictionary(UrlsDic, 5);
                 foreach (var rec in top5)
-                    Console.WriteLine($"{rec.Item1,45}");
+                    Console.WriteLine($"{rec.Item1,30}");
             }
 
             Console.WriteLine("\r\nPress Ctrl-C to exit.\r\n");

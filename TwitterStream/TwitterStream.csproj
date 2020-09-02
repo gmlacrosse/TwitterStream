@@ -131,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Counters.cs" />
+    <Compile Include="EmojiParser.cs" />
     <Compile Include="Emojis.cs" />
     <Compile Include="Extractor.cs" />
     <Compile Include="Program.cs" />
