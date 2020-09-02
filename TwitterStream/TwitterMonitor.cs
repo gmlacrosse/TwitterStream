@@ -1,13 +1,10 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Linq;
 using System.Text;
 using Tweetinvi;
 using Tweetinvi.Core.Core.Helpers;
-using Tweetinvi.Core.Extensions;
 
 namespace TwitterStream
 {
@@ -43,7 +40,7 @@ namespace TwitterStream
 
                 Auth.SetUserCredentials(apiKey, apiKeySecrete, accessToken, accessTokenSecrete);
 
-                var stream = Tweetinvi.Stream.CreateSampleStream();
+                var stream = Stream.CreateSampleStream();
                 stream.TweetReceived += (sender, args) =>
                 {
                     if (args.Tweet.Entities.Hashtags.Any())
@@ -54,8 +51,6 @@ namespace TwitterStream
 
                         foreach (var hashtag in hashtags)
                         {
-                            if (UnicodeHelper.AnyUnicode(hashtag.Text)) continue; // filter out some that won't display properly
-
                             if (!HashTagsDic.ContainsKey(hashtag.Text))
                             {
                                 HashTagsDic.Add(hashtag.Text, 1);
