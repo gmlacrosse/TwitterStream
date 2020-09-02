@@ -38,12 +38,6 @@ namespace TwitterStream
             _emojisRegex = new Regex(String.Join("|", _emojis.Keys.Select(Regex.Escape)));
         }
 
-        public static string ReplaceColonNames(string input)
-        {
-            // replace match using dictionary
-            return _emojisRegex.Replace(input, match => _emojis[match.Value]);
-        }
-
         public static List<string> GetEmojisNames(string input)
         {
             List<string> names = new List<string>();
