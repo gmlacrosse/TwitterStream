@@ -1,14 +1,11 @@
-﻿using NeoSmart.Unicode;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Tweetinvi;
-using Tweetinvi.Core.Core.Helpers;
 
 namespace TwitterStream
 {
@@ -50,7 +47,7 @@ namespace TwitterStream
                     Unified.Add(e.unified);
                 }
 
-                Console.OutputEncoding = System.Text.Encoding.UTF8;
+                Console.OutputEncoding = System.Text.Encoding.Unicode;
 
                 var apiKey = ConfigurationManager.AppSettings["APIKey"].ToString();
                 var apiKeySecrete = ConfigurationManager.AppSettings["APISecretKey"].ToString();
