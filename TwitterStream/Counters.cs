@@ -15,7 +15,7 @@ namespace TwitterStream
         public int Count { get; set; }
         public int WithHashTags { get; set; }
         public int WithUrls { get; set; }
-        public int WithMedia { get; set; }
+        public int WithPhotos { get; set; }
         public int WithEmojis { get; set; }
 
         public Counters()
@@ -59,13 +59,13 @@ namespace TwitterStream
             var hashperstr = string.Format("{0, 7}", $"{hashper:###.##}");
             var urlper = WithUrls * 100.0 / Count;
             var urlperstr = string.Format("{0, 7}", $"{urlper:###.##}");
-            var photoper = WithMedia * 100.0 / Count;
+            var photoper = WithPhotos * 100.0 / Count;
             var photoperstr = string.Format("{0, 7}", $"{photoper:###.##}");
 
 
             var builder = new StringBuilder();
             builder.AppendLine($"{tweets}{perhour}{permin}{persec}|{emojis}{percent}|{hashtags}{percent}|{urls}{percent}|{photos}{percent}");
-            builder.AppendLine($"{Count,10}{hourStr,7}{minStr,7}{sec,7}|{WithEmojis,7}{emjperstr,7}|{WithHashTags,8}{hashperstr,7}|{WithUrls,7}{urlperstr,7}|{WithMedia,7}{photoperstr,7}");
+            builder.AppendLine($"{Count,10}{hourStr,7}{minStr,7}{sec,7}|{WithEmojis,7}{emjperstr,7}|{WithHashTags,8}{hashperstr,7}|{WithUrls,7}{urlperstr,7}|{WithPhotos,7}{photoperstr,7}");
             var statsString = builder.ToString();
             return statsString;
         }

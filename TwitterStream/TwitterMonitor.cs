@@ -109,10 +109,20 @@ namespace TwitterStream
 
                     if (args.Tweet.Media.Any())
                     {
-                        Counters.WithMedia++;
-
                         foreach (var m in args.Tweet.Media)
+                        {
+                            urlsList.Add(m.MediaURL);
                             urlsList.Add("http://" + m.DisplayURL);
+
+                            if (m.DisplayURL.IndexOf("pic.twitter.com") >= 0 || m.DisplayURL.IndexOf("instagram.com") >= 0)
+                            {
+                                Counters.WithPhotos++;
+                            }
+                            else if (m.MediaURL.IndexOf("pic.twitter.com") >= 0 || m.MediaURL.IndexOf("instagram.com") >= 0)
+                            {
+                                Counters.WithPhotos++;
+                            }
+                        }
                     }
 
                     var extractedURLs = Extractor.ExtractURLs(args.Tweet.Text);
